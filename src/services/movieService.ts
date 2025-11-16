@@ -11,9 +11,12 @@ interface TMDBResponse {
   total_results: number;
 }
 
-export async function fetchMovies(query: string): Promise<TMDBResponse> {
+export async function fetchMovies(
+  query: string,
+  page = 1
+): Promise<TMDBResponse> {
   const config = {
-    params: { query },
+    params: { query, page },
     headers: {
       Authorization: `Bearer ${TOKEN}`,
       Accept: "application/json",
