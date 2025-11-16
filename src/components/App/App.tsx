@@ -14,10 +14,9 @@ import styles from "./App.module.css";
 export default function App() {
   const [query, setQuery] = useState("");
   const [page, setPage] = useState(1);
-  const [movies, setMovies] = useState<Movie[]>([]);
   const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
 
-  const handleSubmit = useCallback(async (newQuery: string) => {
+  const handleSubmit = useCallback((newQuery: string) => {
     const trimmed = newQuery.trim();
     if (!trimmed) {
       toast.error("Please enter your search query.");
@@ -26,7 +25,6 @@ export default function App() {
 
     setQuery(trimmed);
     setPage(1);
-    setMovies([]);
   }, []);
 
   const handleSelect = (movie: Movie) => {
@@ -37,12 +35,6 @@ export default function App() {
     setSelectedMovie(null);
   };
 
-  useEffect(() => {
-    if (query === "") {
-      setMovies([]);
-    }
-  }, [query]);
-
   const { data, isError, isLoading, isSuccess } = useQuery({
     queryKey: ["movies", query, page],
     queryFn: () => fetchMovies(query, page),
@@ -51,12 +43,8 @@ export default function App() {
   });
 
   useEffect(() => {
-    if (isSuccess && data) {
-      if (data.results.length === 0) {
-        toast.error("No movies found for your request.");
-      } else {
-        setMovies(data.results);
-      }
+    if (isSuccess && data?.results.length === 0) {
+      toast.error("No movies found for your request.");
     }
   }, [isSuccess, data]);
 
@@ -66,7 +54,7 @@ export default function App() {
       <SearchBar onSubmit={handleSubmit} />
       {isLoading && <Loader />}
       {isError && <ErrorMessage />}
-      {isSuccess && (
+      {isSuccess && data && (
         <>
           {data.total_pages > 1 && (
             <ReactPaginate
@@ -81,7 +69,7 @@ export default function App() {
               previousLabel="←"
             />
           )}
-          <MovieGrid movies={movies} onSelect={handleSelect} />
+          <MovieGrid movies={data.results} onSelect={handleSelect} />
         </>
       )}
       {selectedMovie && (
